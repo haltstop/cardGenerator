@@ -1,0 +1,262 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+<meta charset="utf-8"/>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+
+<body>
+
+<h1>Kartengenerator</h1>
+
+<form> 
+	
+	<h2>Allgemein</h2>
+    
+    Klasse: 
+    <select name="Klasse" size="1">
+      <option value="Chiller">Chiller</option>
+      <option value="Buffer">Buffer</option>
+      <option value="Spießer">Spießer</option>
+      <option value="Arbeitsloser">Arbeitsloser</option>
+      <option value="Zauber">Zauber</option>
+      <option value="Quest">Quest</option>
+      <option value="Tier" selected>Tier</option>
+      <option value="Fabelwesen">Fabelwesen</option>
+    </select>
+   	<br>
+    
+    Prädikat Brechtig: <input id="brechtigCB" name="Brechtig" type="checkbox" value="">
+    
+    
+
+
+	<h2>Texte</h2>
+     
+     
+    
+    
+    Name:
+    <input id="name" name="Name" type="text" value="Knarzige Ente">
+    <br>
+    
+    
+    Beschreibung:
+    <br>
+    <textarea id="infoT" name="Beschreibung" cols="60" rows="3">Ihr Geräusch ist "knarz-knarz".</textarea>
+    <br>
+    
+    Effekte:
+  <input id="effekte" name="Effekte" type="text" value="Verstohlenheit">
+    &nbsp; <u>U</u> <input id="unterCB" name="EffektUnterstrichen" type="checkbox" value="">
+    <br>
+    
+    Effektbeschreibung:
+    <br>
+    <textarea id="effektB" name="Effekt-Beschreibung" cols="60" rows="3">Erhalte für jede gezogende
+Karte +1 Rüstung.</textarea>
+    
+    
+<h2>Werte</h2>
+    
+  	Angriff: <input id="angriff" name="Angriff" type="text" class="num" pattern="[0-9]" onKeyPress="return isNum(event)" value="0" maxlength="1">
+
+    
+    
+    Leben: <input id="leben" name="Leben" type="text" class="num" pattern="[0-9]" onKeyPress="return isNum(event)" value="1"  maxlength="1">
+
+    
+    
+    Kosten: <input id="kosten" name="Kosten" type="text" class="num" pattern="[0-9]" onKeyPress="return isNum(event)" value="1" maxlength="1">
+    <br>
+    
+
+
+<input name="Los" type="button" value="Erstellen" onClick="createCard()">
+</form>
+    
+    
+    <canvas id="canv"></canvas>
+    
+    <br>
+    
+    <img id="emptyC" src="pics/emptycard.jpg">
+    <img id="brechtig" src="pics/brechtig.png">
+    
+</body>
+<script>
+ function isNum(event1){
+	return event1.charCode >= 48 && event1.charCode <= 57; 
+	 
+ }
+ 
+ function createCard(){
+	 try{
+	var emptyC = document.getElementById("emptyC");
+	var canv = document.getElementById("canv");
+	var lineheight = 20;
+	var lines = [];
+	
+	canv.width = emptyC.width;
+	canv.height = emptyC.height;
+	 
+	canv.style.backgroundColor = "red";
+	 
+	 canv.sav
+	 
+	ctx = canv.getContext('2d');
+	
+	ctx.drawImage(emptyC,0,0);
+	
+	//ctx.textBaseline = 'top';
+
+	
+	//BESCHREIBUNG
+	ctx.textBaseline = 'top';
+	
+	var infoT = document.getElementById("infoT");
+	var infoT_t = "»" + infoT.value + "«";
+	
+	
+	ctx.font = "italic 20pt Verdana";
+	
+	lines = infoT_t.split('\n');
+	
+	lineheight = 37;
+	
+	
+	for (var i = 0; i<lines.length; i++){
+		 ctx.fillText(lines[i], 39, 603 + (i*lineheight) );
+	}
+	
+	ctx.textBaseline = 'middle';
+	//NAME
+	
+	var name = document.getElementById("name");
+	var name_t = name.value;
+	
+	ctx.font = "bold 32pt 'Futura bdCn BT'";
+	
+	while(true){
+		
+		if(ctx.measureText(name_t).width > 685){
+			var pt = ctx.font.split(' ')[1];
+			pt = String(pt).replace('pt','');
+			
+			ctx.font  = "bold " + pt*0.9 +  "pt 'Futura bdCn BT";
+		}else{
+			break;	
+		}
+	}
+	
+	
+	
+	ctx.fillStyle = "white";
+	ctx.fillText(name_t,32,555);
+	
+	ctx.fillStyle = "black";
+	ctx.fillText(name_t,34,555);
+	
+	//EFFEKTE
+	var effekte = document.getElementById("effekte");
+	var effekte_t = effekte.value;
+	
+	ctx.font = "bold 35pt Calibri";
+	
+	ctx.textAlign = "center";
+	
+	while(true){
+		
+		if(ctx.measureText(effekte_t).width > 440){
+			var pt = ctx.font.split(' ')[1];
+			pt = String(pt).replace('pt','');
+			
+			ctx.font  = "bold " + pt*0.9 +  "pt Calibri";
+		}else{
+			break;	
+		}
+	}
+	
+	
+	ctx.fillText(effekte_t,canv.width/2,774);
+	
+		
+	if(document.getElementById("unterCB").checked){
+		//Unterstreichen
+		
+		var mText = ctx.measureText(effekte_t);
+		var x = (canv.width /2) - mText.width / 2;
+		ctx.fillRect(x, 774+25, mText.width, 4);
+	}
+	
+	
+	
+	//EFFEKTBESCHREIBUNG
+	ctx.textBaseline = 'top';
+	
+	var effektB = document.getElementById("effektB");
+	var effektB_t = effektB.value;
+	
+	ctx.font = "23pt Verdana";
+	
+	
+	lines = effektB_t.split('\n');
+	
+	lineheight = 40;
+	
+	for (var i = 0; i<lines.length; i++){
+		 ctx.fillText(lines[i], canv.width/2, 830 + (i*lineheight) );
+	}
+	
+	ctx.textBaseline = 'middle';
+	
+	//PRÄDIKAT BRECHTIG	
+	if(document.getElementById("brechtigCB").checked){
+		var brechtig = document.getElementById("brechtig")
+		ctx.drawImage(brechtig,0,0);
+	}
+	
+	
+	
+	 }catch(err){alert(err)}
+	 
+	 //WERTE
+	 
+	 ctx.lineWidth=10;
+	 ctx.strokeStyle = "#c3c3c3"
+	 ctx.font = "bold 47pt Belwe";
+	 	 
+	 //ANGRIFF
+	 var angriff = document.getElementById("angriff");
+	var angriff_t = angriff.value;
+	
+	ctx.strokeText(angriff_t,96,771);
+	ctx.fillText(angriff_t,96,771);
+	
+	//LEBEN
+	var leben = document.getElementById("leben");
+	var leben_t = leben.value;
+	
+	ctx.strokeText(leben_t,647,771);
+	ctx.fillText(leben_t,647,771);
+	
+	//Kosten
+	ctx.strokeStyle = "white"
+	
+	var kosten = document.getElementById("kosten");
+	var kosten_t = kosten.value;
+	
+	ctx.strokeText(kosten_t,59,66);
+	ctx.fillText(kosten_t,59,66);
+	
+	 
+ }
+ 
+ </script>
+ 
+
+ 
+</html>

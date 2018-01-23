@@ -1,0 +1,21 @@
+
+
+
+body{
+	margin-left:5%;	
+	margin-right:5%;	
+}
+
+form{
+	font-family: verdana;
+ 	font-size: 14px;
+ 	line-height: 30px;
+	background-color:lightgrey;
+	padding:10px;
+	padding-top:0;
+		
+}
+
+.num{
+	width:15px;
+}
