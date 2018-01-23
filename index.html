@@ -10,14 +10,21 @@
 
 <body>
 
-<h1>Kartengenerator</h1>
 
-<form> 
+
+<h2>Benötigte Schriften:</h2>
+	<a href="Belwe-Bold.ttf"><strong>Belwe</strong> (bold)</a><br>
+	<a href="FuturaBoldCondensedBT.ttf"><strong>Futura</strong> (bold, condensed BT)</a><br>
+	(nach der installation Browser neustarten)
+
+	<h1>Kartengenerator</h1>
+
+<div  id="div1"><form> 
 	
 	<h2>Allgemein</h2>
     
     Klasse: 
-    <select name="Klasse" size="1">
+    <select  id="klasse" name="Klasse" size="1" onchange="klasseChanged()">
       <option value="Chiller">Chiller</option>
       <option value="Buffer">Buffer</option>
       <option value="Spießer">Spießer</option>
@@ -27,7 +34,10 @@
       <option value="Tier" selected>Tier</option>
       <option value="Fabelwesen">Fabelwesen</option>
     </select>
-   	<br>
+   	Andere:  <input id="klasse2" name="Andere Klasse" type="text">"Besondere Karte": <input id="specialCardCB" name="Nur Text" type="checkbox" value="" onchange="specialCardChanged(this.checked)">
+	
+	<br>
+	
     
     Prädikat Brechtig: <input id="brechtigCB" name="Brechtig" type="checkbox" value="">
     
@@ -61,44 +71,89 @@ Karte +1 Rüstung.</textarea>
     
     
 <h2>Werte</h2>
-    
-  	Angriff: <input id="angriff" name="Angriff" type="text" class="num" pattern="[0-9]" onKeyPress="return isNum(event)" value="0" maxlength="1">
 
-    
+     Kosten: <input id="kosten" name="Kosten" type="text" class="num" pattern="[0-9]" onKeyPress="return isNum(event)" value="1" maxlength="1">
+	
+  	Angriff: <input id="angriff" name="Angriff" type="text" class="num" pattern="[0-9]" onKeyPress="return isNum(event)" value="0" maxlength="1">
     
     Leben: <input id="leben" name="Leben" type="text" class="num" pattern="[0-9]" onKeyPress="return isNum(event)" value="1"  maxlength="1">
-
-    
-    
-    Kosten: <input id="kosten" name="Kosten" type="text" class="num" pattern="[0-9]" onKeyPress="return isNum(event)" value="1" maxlength="1">
+   
+   
     <br>
     
+<input name="Los" type="button" value="Erstellen" onClick="createCard()"> <a id="download" href="" onclick="downloadCanvas(this)"  style="display:none">Karte downloaden</a>
+</form></div>
 
-
-<input name="Los" type="button" value="Erstellen" onClick="createCard()">
-</form>
-    
-    
     <canvas id="canv"></canvas>
+	
+
     
     <br>
     
-    <img id="emptyC" src="pics/emptycard.jpg">
-    <img id="brechtig" src="pics/brechtig.png">
+    <img id="emptyC" src="pics/emptycard.jpg" style="display:none">
+    <img id="brechtig" src="pics/brechtig.png" style="display:none">
     
 </body>
 <script>
+
+var specialCards = ["Quest","Zauber"];
+
  function isNum(event1){
 	return event1.charCode >= 48 && event1.charCode <= 57; 
 	 
  }
  
+ function downloadCanvas(link) {
+	//window.location = document.getElementById("canv").toDataURL();
+	var base64 = document.getElementById("canv").toDataURL();
+	base64 = base64.replace('data:image/png', 'data:application/octet-stream');
+	
+	
+	link.download = document.getElementById("name").value + ".png";
+    link.href = base64;    
+}
+ 
+ function specialCardChanged(bool){
+	document.getElementById("leben").disabled = bool;
+	document.getElementById("angriff").disabled = bool;
+	document.getElementById("effekte").disabled = bool;
+	document.getElementById("unterCB").disabled = bool; 
+ }
+ 
+ 
+ function klasseChanged(){
+ 
+	var klasse = document.getElementById("klasse");
+	var specialCardCB = document.getElementById("specialCardCB");
+	
+	var b = false;
+	
+	for(i in specialCards){
+	
+		if(klasse.value == specialCards[i]){
+			b = true;
+		
+			break;
+		}		
+	}
+	
+	specialCardCB.checked = b;
+	specialCardChanged(b);
+	
+ }
+ 
+ 
  function createCard(){
 	 try{
+	 
+	 document.getElementById("download").style.display = "block";
+	 
 	var emptyC = document.getElementById("emptyC");
 	var canv = document.getElementById("canv");
 	var lineheight = 20;
 	var lines = [];
+	var special = document.getElementById("specialCardCB").checked;
+	var infoTLength = 1;
 	
 	canv.width = emptyC.width;
 	canv.height = emptyC.height;
@@ -114,6 +169,13 @@ Karte +1 Rüstung.</textarea>
 	//ctx.textBaseline = 'top';
 
 	
+	//falls Special Card -> Angriff/Leben löschen
+	if(special){
+		ctx.fillStyle = "white";
+		ctx.fillRect(27,720,canv.width-(2*27),100);
+	}
+	
+	ctx.fillStyle = "black";
 	//BESCHREIBUNG
 	ctx.textBaseline = 'top';
 	
@@ -127,8 +189,9 @@ Karte +1 Rüstung.</textarea>
 	
 	lineheight = 37;
 	
+	infoTLength = lines.length;
 	
-	for (var i = 0; i<lines.length; i++){
+	for (var i = 0; i<infoTLength; i++){
 		 ctx.fillText(lines[i], 39, 603 + (i*lineheight) );
 	}
 	
@@ -152,45 +215,57 @@ Karte +1 Rüstung.</textarea>
 		}
 	}
 	
+	var offSet = 0;
+	
+	if(ctx.measureText(name_t).width < 600){
+		offSet = 20;
+	}
 	
 	
 	ctx.fillStyle = "white";
-	ctx.fillText(name_t,32,555);
+	ctx.fillText(name_t,32+offSet,557);
 	
 	ctx.fillStyle = "black";
-	ctx.fillText(name_t,34,555);
-	
-	//EFFEKTE
-	var effekte = document.getElementById("effekte");
-	var effekte_t = effekte.value;
-	
-	ctx.font = "bold 35pt Calibri";
+	ctx.fillText(name_t,34+offSet,555);
 	
 	ctx.textAlign = "center";
 	
-	while(true){
+	//EFFEKTE
+	if(!special){
+	
+		var effekte = document.getElementById("effekte");
+		var effekte_t = effekte.value;
+	
+		ctx.font = "bold 35pt Calibri";
+	
 		
-		if(ctx.measureText(effekte_t).width > 440){
-			var pt = ctx.font.split(' ')[1];
-			pt = String(pt).replace('pt','');
+	
+		while(true){
+		
+			if(ctx.measureText(effekte_t).width > 440){
+				var pt = ctx.font.split(' ')[1];
+				pt = String(pt).replace('pt','');
 			
-			ctx.font  = "bold " + pt*0.9 +  "pt Calibri";
-		}else{
-			break;	
+				ctx.font  = "bold " + pt*0.9 +  "pt Calibri";
+			}else{
+				break;	
+			}
 		}
-	}
 	
 	
-	ctx.fillText(effekte_t,canv.width/2,774);
+		ctx.fillText(effekte_t,canv.width/2,774);
 	
 		
-	if(document.getElementById("unterCB").checked){
-		//Unterstreichen
-		
-		var mText = ctx.measureText(effekte_t);
-		var x = (canv.width /2) - mText.width / 2;
-		ctx.fillRect(x, 774+25, mText.width, 4);
+		if(document.getElementById("unterCB").checked){
+			//Unterstreichen
+			
+			var mText = ctx.measureText(effekte_t);
+			var x = (canv.width /2) - mText.width / 2;
+			ctx.fillRect(x, 774+25, mText.width, 4);
+		}
+	
 	}
+	
 	
 	
 	
@@ -199,6 +274,11 @@ Karte +1 Rüstung.</textarea>
 	
 	var effektB = document.getElementById("effektB");
 	var effektB_t = effektB.value;
+	var yStart = 830;
+	
+	if(special){
+		yStart = 700 + (infoTLength > 2 ? (infoTLength-2)*37 : 0);	
+	}
 	
 	ctx.font = "23pt Verdana";
 	
@@ -208,7 +288,7 @@ Karte +1 Rüstung.</textarea>
 	lineheight = 40;
 	
 	for (var i = 0; i<lines.length; i++){
-		 ctx.fillText(lines[i], canv.width/2, 830 + (i*lineheight) );
+		 ctx.fillText(lines[i], canv.width/2, yStart + (i*lineheight) );
 	}
 	
 	ctx.textBaseline = 'middle';
@@ -219,31 +299,32 @@ Karte +1 Rüstung.</textarea>
 		ctx.drawImage(brechtig,0,0);
 	}
 	
-	
-	
-	 }catch(err){alert(err)}
 	 
 	 //WERTE
 	 
-	 ctx.lineWidth=10;
+	 ctx.lineWidth=7;
 	 ctx.strokeStyle = "#c3c3c3"
 	 ctx.font = "bold 47pt Belwe";
-	 	 
-	 //ANGRIFF
-	 var angriff = document.getElementById("angriff");
-	var angriff_t = angriff.value;
+	 
+	if(!special){
 	
-	ctx.strokeText(angriff_t,96,771);
-	ctx.fillText(angriff_t,96,771);
+		//ANGRIFF
+		var angriff = document.getElementById("angriff");
+		var angriff_t = angriff.value;
 	
-	//LEBEN
-	var leben = document.getElementById("leben");
-	var leben_t = leben.value;
+		ctx.strokeText(angriff_t,96,771);
+		ctx.fillText(angriff_t,96,771);
 	
-	ctx.strokeText(leben_t,647,771);
-	ctx.fillText(leben_t,647,771);
+		//LEBEN
+		var leben = document.getElementById("leben");
+		var leben_t = leben.value;
 	
-	//Kosten
+		ctx.strokeText(leben_t,647,771);
+		ctx.fillText(leben_t,647,771);
+	
+	}
+	
+	//KOSTEN
 	ctx.strokeStyle = "white"
 	
 	var kosten = document.getElementById("kosten");
@@ -252,6 +333,43 @@ Karte +1 Rüstung.</textarea>
 	ctx.strokeText(kosten_t,59,66);
 	ctx.fillText(kosten_t,59,66);
 	
+	//KLASSE
+	var klasse = document.getElementById("klasse");
+	var klasse2 = document.getElementById("klasse2");
+	
+	
+	var klasse_t = klasse2.value != "" ? klasse2.value : klasse.options[klasse.selectedIndex].value;
+	
+	ctx.font = "bold 22pt Belwe";
+	
+	var klasseWidth = ctx.measureText(klasse_t).width;
+	;
+	ctx.fillStyle = "white";
+	
+	var x1 = parseInt(canv.width/2-klasseWidth/2)-15;
+	var x2 = parseInt(canv.width/2+klasseWidth/2)+15;
+	var yH = 17;
+	
+	ctx.fillRect(x1,1000,klasseWidth+(2*15),37);
+	
+	
+	ctx.fillStyle = "black";
+	ctx.fillText(klasse_t,canv.width/2,1020);
+	
+	ctx.strokeStyle = "black"
+	ctx.lineWidth = 4;
+	
+	ctx.beginPath();
+	ctx.moveTo(x1,1037);
+	ctx.lineTo(x1,1037-yH);
+	ctx.quadraticCurveTo(x1, 1000, x1+yH, 1000);
+	ctx.lineTo(x2-yH,1000);
+	ctx.quadraticCurveTo(x2, 1000, x2, 1037-yH);
+	ctx.lineTo(x2,1037);
+	ctx.stroke();
+	
+	
+	}catch(err){alert(err)}
 	 
  }
  
